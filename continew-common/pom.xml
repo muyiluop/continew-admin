@@ -50,16 +50,16 @@
         </dependency>
 
         <!-- MySQL Java 驱动 -->
-        <dependency>
+<!--        <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-        </dependency>
+        </dependency>-->
 
         <!-- PostgreSQL Java 驱动 -->
-        <!--<dependency>
+        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-        </dependency>-->
+        </dependency>
 
         <!-- Crane4j（基于注解的，用于完成一切 “根据 A 的 key 值拿到 B，再把 B 的属性映射到 A” 这类需求的字段填充框架） -->
         <dependency>

@@ -10,16 +10,6 @@ application:
   starter: 2.14.0
   # 基本包
   base-package: top.continew.admin
-  ## 作者信息配置
-  contact:
-    name: Charles7c
-    email: charles7c@126.com
-    url: https://charles7c.top
-  ## 许可协议信息配置
-  license:
-    name: Apache-2.0
-    url: https://github.com/continew-org/continew-admin/blob/dev/LICENSE
-
 --- ### 服务器配置
 server:
   servlet:
@@ -272,8 +262,8 @@ mybatis-plus:
     # MyBatis 自动映射策略
     # NONE：不启用 PARTIAL：只对非嵌套 resultMap 自动映射 FULL：对所有 resultMap 自动映射
     auto-mapping-behavior: PARTIAL
-    database-id: mysql
-    #database-id: pgsql
+#    database-id: mysql
+    database-id: pgsql
   ## 全局配置
   global-config:
     banner: true
@@ -298,7 +288,7 @@ mybatis-plus:
     # 分页插件配置
     pagination:
       enabled: true
-      db-type: MYSQL
+      db-type: POSTGRE_SQL
 
 --- ### CosId 配置
 cosid:

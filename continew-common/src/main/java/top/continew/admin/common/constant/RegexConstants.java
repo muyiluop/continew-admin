@@ -67,7 +67,7 @@ public class RegexConstants {
     /**
      * HTTP URL 正则（非 IP 地址）
      */
-    public static final String URL_HTTP_NOT_IP = "^(https?:\\/\\/)([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(\\/[^\\s]*)?$";
+    public static final String URL_HTTP_NOT_IP = "^(https?:\\/\\/)([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(:\\d{1,5})?(\\/[^\\s]*)?$";
 
     /**
      * HTTP HOST 正则
