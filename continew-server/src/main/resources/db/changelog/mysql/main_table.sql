@@ -399,3 +399,8 @@ CREATE TABLE IF NOT EXISTS `sys_sms_log`  (
     INDEX `idx_config_id`(`config_id`),
     INDEX `idx_create_user`(`create_user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='短信日志表';
+
+-- changeset charles7c:2
+-- comment 存储表新增 Region 字段（兼容 MinIO 等 S3 协议对象存储的 Region 签名校验）
+ALTER TABLE `sys_storage`
+    ADD COLUMN `region` varchar(255) DEFAULT NULL COMMENT 'Region' AFTER `endpoint`;

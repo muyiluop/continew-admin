@@ -74,6 +74,12 @@ public class StorageResp extends BaseDetailResp {
     private String endpoint;
 
     /**
+     * Region
+     */
+    @Schema(description = "Region", example = "us-east-1")
+    private String region;
+
+    /**
      * Bucket/存储路径
      */
     @Schema(description = "Bucket/存储路径", example = "C:/continew-admin/data/file/")

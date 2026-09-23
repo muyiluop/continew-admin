@@ -77,6 +77,12 @@ public class StorageDO extends BaseDO {
     private String endpoint;
 
     /**
+     * Region
+     * <p>对象存储区域，例如：us-east-1、cn-north-1、oss-cn-shanghai。为空时默认 us-east-1</p>
+     */
+    private String region;
+
+    /**
      * Bucket
      */
     private String bucketName;

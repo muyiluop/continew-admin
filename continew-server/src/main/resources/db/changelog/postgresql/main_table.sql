@@ -666,3 +666,8 @@ COMMENT ON COLUMN "sys_sms_log"."res_msg"     IS '返回数据';
 COMMENT ON COLUMN "sys_sms_log"."create_user" IS '创建人';
 COMMENT ON COLUMN "sys_sms_log"."create_time" IS '创建时间';
 COMMENT ON TABLE "sys_sms_log"                IS '短信日志表';
+
+-- changeset charles7c:2
+-- comment 存储表新增 Region 字段（兼容 MinIO 等 S3 协议对象存储的 Region 签名校验）
+ALTER TABLE "sys_storage" ADD COLUMN IF NOT EXISTS "region" varchar(255) DEFAULT NULL;
+COMMENT ON COLUMN "sys_storage"."region" IS 'Region';

@@ -198,6 +198,8 @@ public class StorageServiceImpl extends BaseServiceImpl<StorageMapper, StorageDO
                 config.setAccessKey(storage.getAccessKey());
                 config.setSecretKey(storage.getSecretKey());
                 config.setEndPoint(storage.getEndpoint());
+                // 兼容 S3 协议的服务（MinIO、Ceph 等）会校验签名中的 Region，必须与对端配置保持一致
+                config.setRegion(storage.getRegion());
                 config.setBucketName(storage.getBucketName());
                 fileStorageList.addAll(FileStorageServiceBuilder.buildAmazonS3FileStorage(Collections
                     .singletonList(config), null));

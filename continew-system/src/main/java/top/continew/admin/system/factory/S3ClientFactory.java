@@ -16,6 +16,7 @@
 
 package top.continew.admin.system.factory;
 
+import cn.hutool.core.util.StrUtil;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -38,19 +39,27 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class S3ClientFactory {
 
+    /**
+     * 默认 Region（存储未配置 Region 时使用，兼容原有行为）
+     */
+    private static final String DEFAULT_REGION = "us-east-1";
+
     private final ConcurrentHashMap<String, S3Client> CLIENT_CACHE = new ConcurrentHashMap<>();
 
     public S3Client getClient(StorageDO storage) {
-        String key = storage.getEndpoint() + "|" + storage.getAccessKey();
+        // 兼容 S3 协议的服务（MinIO、Ceph 等）会校验签名中的 Region，必须与对端配置保持一致
+        String region = StrUtil.blankToDefault(storage.getRegion(), DEFAULT_REGION);
+        String key = storage.getEndpoint() + "|" + storage.getAccessKey() + "|" + region;
         return CLIENT_CACHE.computeIfAbsent(key, k -> {
             StaticCredentialsProvider auth = StaticCredentialsProvider.create(AwsBasicCredentials.create(storage
-                .getAccessKey(), storage.getSecretKey()));
+                    .getAccessKey(), storage.getSecretKey()));
             return S3Client.builder()
-                .credentialsProvider(auth)
-                .endpointOverride(URI.create(storage.getEndpoint()))
-                .region(Region.US_EAST_1)
-                .serviceConfiguration(S3Configuration.builder().chunkedEncodingEnabled(false).build())
-                .build();
+                    .credentialsProvider(auth)
+                    .endpointOverride(URI.create(storage.getEndpoint()))
+                    .crossRegionAccessEnabled(true)
+                    .region(Region.of(region))
+                    .serviceConfiguration(S3Configuration.builder().chunkedEncodingEnabled(false).build())
+                    .build();
         });
     }
 

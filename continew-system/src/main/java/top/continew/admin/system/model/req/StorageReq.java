@@ -94,6 +94,13 @@ public class StorageReq implements Serializable {
     private String endpoint;
 
     /**
+     * Region
+     */
+    @Schema(description = "Region", example = "us-east-1")
+    @Length(max = 255, message = "Region长度不能超过 {max} 个字符", groups = ValidationGroup.Storage.OSS.class)
+    private String region;
+
+    /**
      * Bucket/存储路径
      */
     @Schema(description = "Bucket/存储路径", example = "continew-admin")
