@@ -25,6 +25,4 @@ public class TenantAvailableResp {
 
     private String name;
 
-    private String domain;
-
 }

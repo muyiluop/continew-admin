@@ -39,6 +39,7 @@ import top.continew.admin.tenant.mapper.TenantMapper;
 import top.continew.admin.tenant.model.entity.TenantDO;
 import top.continew.admin.tenant.model.query.TenantQuery;
 import top.continew.admin.tenant.model.req.TenantReq;
+import top.continew.admin.tenant.model.resp.TenantAvailableResp;
 import top.continew.admin.tenant.model.resp.TenantDetailResp;
 import top.continew.admin.tenant.model.resp.TenantResp;
 import top.continew.admin.tenant.service.PackageService;
@@ -46,6 +47,7 @@ import top.continew.admin.tenant.service.TenantService;
 import top.continew.starter.cache.redisson.util.RedisUtils;
 import top.continew.starter.core.constant.StringConstants;
 import top.continew.starter.core.util.validation.CheckUtils;
+import top.continew.starter.extension.tenant.context.TenantContextHolder;
 import top.continew.starter.extension.tenant.util.TenantUtils;
 
 import java.time.LocalDateTime;
@@ -136,6 +138,23 @@ public class TenantServiceImpl extends BaseServiceImpl<TenantMapper, TenantDO, T
             .oneOpt()
             .map(TenantDO::getId)
             .orElse(null);
+    }
+
+    @Override
+    public List<TenantAvailableResp> listAvailable() {
+        // 仅在开启租户时返回可用租户
+        if (!TenantContextHolder.isTenantEnabled()) {
+            return List.of();
+        }
+        LocalDateTime now = LocalDateTime.now();
+        return baseMapper.lambdaQuery()
+            .select(TenantDO::getId, TenantDO::getName, TenantDO::getStatus, TenantDO::getExpireTime)
+            .list()
+            .stream()
+            .filter(tenant -> DisEnableStatusEnum.ENABLE.equals(tenant.getStatus()))
+            .filter(tenant -> tenant.getExpireTime() == null || tenant.getExpireTime().isAfter(now))
+            .map(tenant -> BeanUtil.copyProperties(tenant, TenantAvailableResp.class))
+            .toList();
     }
 
     @Override

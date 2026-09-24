@@ -20,6 +20,7 @@ import top.continew.admin.common.base.service.BaseService;
 import top.continew.admin.tenant.model.entity.TenantDO;
 import top.continew.admin.tenant.model.query.TenantQuery;
 import top.continew.admin.tenant.model.req.TenantReq;
+import top.continew.admin.tenant.model.resp.TenantAvailableResp;
 import top.continew.admin.tenant.model.resp.TenantDetailResp;
 import top.continew.admin.tenant.model.resp.TenantResp;
 import top.continew.starter.data.service.IService;
@@ -50,6 +51,15 @@ public interface TenantService extends BaseService<TenantResp, TenantDetailResp,
      * @return ID
      */
     Long getIdByCode(String code);
+
+    /**
+     * 查询可用租户列表
+     *
+     * <p>仅返回启用且未过期的租户，用于登录前选择租户。</p>
+     *
+     * @return 可用租户列表
+     */
+    List<TenantAvailableResp> listAvailable();
 
     /**
      * 检查租户状态

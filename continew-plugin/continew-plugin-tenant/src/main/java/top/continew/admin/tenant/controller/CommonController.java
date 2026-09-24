@@ -25,8 +25,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import top.continew.admin.tenant.model.resp.TenantCommonResp;
 import top.continew.admin.tenant.service.TenantService;
 import top.continew.starter.extension.tenant.annotation.TenantIgnore;
+import top.continew.starter.extension.tenant.context.TenantContextHolder;
 import top.continew.starter.log.annotation.Log;
 
 /**
@@ -51,5 +53,16 @@ public class CommonController {
     @GetMapping("/id")
     public Long getTenantIdByDomain(@RequestParam String domain) {
         return tenantService.getIdByDomain(domain);
+    }
+
+    @SaIgnore
+    @TenantIgnore
+    @Operation(summary = "查询租户信息", description = "查询租户开启状态及可用租户列表")
+    @GetMapping("/info")
+    public TenantCommonResp info() {
+        TenantCommonResp resp = new TenantCommonResp();
+        resp.setIsEnabled(TenantContextHolder.isTenantEnabled());
+        resp.setAvailableList(tenantService.listAvailable());
+        return resp;
     }
 }
