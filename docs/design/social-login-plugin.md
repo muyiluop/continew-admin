@@ -108,9 +108,11 @@ P1 追加：`api/SocialAuthApiImpl.java`、`api/SocialDataApiImpl.java`（`Tenan
 - **缓存**：当前**刻意不加缓存**。平台配置实体含解密后的 `clientSecret`，缓存它等于把密钥明文写进 Redis；而 `listEnabled()` 只是一次小表索引查询、调用频率很低，加缓存的收益不抵风险。将来若确需缓存，只能缓存 `source/name` 这类无密钥投影，且 KEY **必须拼接租户 ID**
 - **套餐菜单授权**：`tenant_package_menu` 没有任何种子数据，菜单授权完全由「租户套餐管理」勾选决定。
 - ⚠️ **租户可见性的两个独立机制**（容易混淆）：
-  1. `ignore-menus`（yml）**只在「租户套餐管理」的菜单树里生效**，用于隐藏「租户不该配给自己」的菜单；
-  2. 租户实际可见的菜单 = **授予 `admin`（租户管理员）角色的菜单集合**（`MenuServiceImpl.listExcludeTenantMenu()` 取的是「全部菜单 − 租户管理员角色菜单」的差集）。
-- 本次把社交登录挂到「系统配置」（1150）下，而 **1150 及其子菜单均未授予租户管理员角色**，因此租户看不到社交登录页签。若要让租户自行维护，需要：① 给 `admin` 角色授予 1150 及其它配置页签（会顺带暴露网站/安全/登录等配置）；② 或采用「只有默认租户能配、租户只读继承」的模型。**当前形态适合平台统一配置**
+  1. `ignore-menus`（yml）**只在「租户套餐管理」的菜单树里生效**（`PackageController.listMenuTree` 是唯一使用点），决定「平台管理员**能勾选**哪些菜单授予租户」；
+  2. 租户实际可见的菜单 = **授予其角色（租户管理员 `admin`）的菜单集合**（`AuthServiceImpl.buildRouteTree` 按 `listByRoleId` 构建路由），来源是套餐的 `tenant_package_menu` 授权。
+- **`ignore-menus` 必须按「叶子」粒度忽略，不能忽略父菜单**：实测 Hutool `TreeUtil.build` 会把「父节点不在列表中」的子节点**整棵丢弃**（不是提升为顶级）。因此原先 `- 1150 系统配置` 会让 1150 的**全部子菜单**（含社交登录）从套餐菜单树里消失，导致社交登录根本无法被勾选。
+- 现在的做法：**放行 1150「系统配置」，只忽略它与租户无关的 7 个子菜单**（1160 网站 / 1170 安全 / 1180 登录 / 1190 邮件 / 1210 短信 / 1230 存储 / 1250 客户端），社交登录（1260）保持可勾选。
+- ⚠️ 配置改完只是**让勾选成为可能**；**已有套餐仍需平台管理员到「租户套餐管理」补勾「系统配置 > 社交登录」，租户才能真正看到**
 
 ## 5. 前端设计
 
@@ -137,6 +139,7 @@ P1 追加：`api/SocialAuthApiImpl.java`、`api/SocialDataApiImpl.java`（`Tenan
 1. P1 排除 xkcoding starter 后，需实测启动无异常（其 `AutoConfiguration.imports` 中的缺失类应被 Boot 跳过）
 2. `client_secret` 用 `continew-starter.encrypt.field.password`（AES）加密，换环境必须同 key，否则历史密文解不开
 3. 新增菜单需要给租户套餐补授权，现有租户才能在菜单里看到
+7. `ignore-menus` 只影响「套餐可勾选范围」，不影响已授权的租户菜单；两者都到位租户才可见
 5. **不提供导出**：平台配置不导出（`Api.EXPORT` 未启用，`SocialConfigResp` 无 Excel 注解）。changeset 2 里历史遗留的 `6016` 导出菜单由 changeset 4 删除（**不修改已执行过的 changeset**，避免 Liquibase 校验和不匹配）
 6. 启停开关走 `PUT /social/config/{id}/status`，权限点 `social:config:updateStatus`（菜单 `6017`），前端用 `a-switch` 且失败回滚
 4. 若先开多租户建了多套配置、再关闭多租户，唯一索引会让同 source 多行同时可见，`getBySource` 需要显式处理
