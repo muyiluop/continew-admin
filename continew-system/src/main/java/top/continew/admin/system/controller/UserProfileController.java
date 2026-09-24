@@ -16,7 +16,6 @@
 
 package top.continew.admin.system.controller;
 
-import com.xkcoding.justauth.autoconfigure.JustAuthProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -24,19 +23,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import me.zhyd.oauth.AuthRequestBuilder;
-import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.request.AuthRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import top.continew.admin.common.api.social.SocialAuthApi;
 import top.continew.admin.common.constant.CacheConstants;
 import top.continew.admin.common.context.UserContextHolder;
 import top.continew.admin.common.util.SecureUtils;
-import top.continew.admin.system.enums.SocialSourceEnum;
 import top.continew.admin.system.model.entity.user.UserSocialDO;
 import top.continew.admin.system.model.req.user.UserBasicInfoUpdateReq;
 import top.continew.admin.system.model.req.user.UserEmailUpdateReq;
@@ -47,7 +43,6 @@ import top.continew.admin.system.model.resp.user.UserSocialBindResp;
 import top.continew.admin.system.service.UserService;
 import top.continew.admin.system.service.UserSocialService;
 import top.continew.starter.cache.redisson.util.RedisUtils;
-import top.continew.starter.core.exception.BadRequestException;
 import top.continew.starter.core.util.CollUtils;
 import top.continew.starter.core.util.validation.ValidationUtils;
 
@@ -71,7 +66,7 @@ public class UserProfileController {
     private static final String CAPTCHA_EXPIRED = "验证码已失效";
     private final UserService userService;
     private final UserSocialService userSocialService;
-    private final JustAuthProperties authProperties;
+    private final SocialAuthApi socialAuthApi;
 
     @Operation(summary = "修改头像", description = "用户修改个人头像")
     @PatchMapping("/avatar")
@@ -127,7 +122,7 @@ public class UserProfileController {
             String source = userSocial.getSource();
             UserSocialBindResp userSocialBind = new UserSocialBindResp();
             userSocialBind.setSource(source);
-            userSocialBind.setDescription(SocialSourceEnum.valueOf(source).getDescription());
+            userSocialBind.setDescription(socialAuthApi.getPlatformName(source));
             return userSocialBind;
         });
     }
@@ -136,8 +131,7 @@ public class UserProfileController {
     @Parameter(name = "source", description = "来源", example = "gitee", in = ParameterIn.PATH)
     @PostMapping("/social/{source}")
     public void bindSocial(@PathVariable String source, @RequestBody AuthCallback callback) {
-        AuthRequest authRequest = this.getAuthRequest(source);
-        AuthResponse<AuthUser> response = authRequest.login(callback);
+        AuthResponse<AuthUser> response = socialAuthApi.login(source, callback);
         ValidationUtils.throwIf(!response.ok(), response.getMsg());
         AuthUser authUser = response.getData();
         userSocialService.bind(authUser, UserContextHolder.getUserId());
@@ -150,12 +144,4 @@ public class UserProfileController {
         userSocialService.deleteBySourceAndUserId(source, UserContextHolder.getUserId());
     }
 
-    private AuthRequest getAuthRequest(String source) {
-        try {
-            AuthConfig authConfig = authProperties.getType().get(source.toUpperCase());
-            return AuthRequestBuilder.builder().source(source).authConfig(authConfig).build();
-        } catch (Exception e) {
-            throw new BadRequestException("暂不支持 [%s] 平台账号登录".formatted(source));
-        }
-    }
 }

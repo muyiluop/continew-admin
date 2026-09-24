@@ -19,7 +19,6 @@ package top.continew.admin.auth.controller;
 import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
-import com.xkcoding.justauth.autoconfigure.JustAuthProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -27,9 +26,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import me.zhyd.oauth.AuthRequestBuilder;
-import me.zhyd.oauth.config.AuthConfig;
-import me.zhyd.oauth.request.AuthRequest;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import org.springframework.web.bind.annotation.*;
 import top.continew.admin.auth.model.req.LoginReq;
@@ -38,11 +34,11 @@ import top.continew.admin.auth.model.resp.RouteResp;
 import top.continew.admin.auth.model.resp.SocialAuthAuthorizeResp;
 import top.continew.admin.auth.model.resp.UserInfoResp;
 import top.continew.admin.auth.service.AuthService;
+import top.continew.admin.common.api.social.SocialAuthApi;
 import top.continew.admin.common.context.UserContext;
 import top.continew.admin.common.context.UserContextHolder;
 import top.continew.admin.system.model.resp.user.UserDetailResp;
 import top.continew.admin.system.service.UserService;
-import top.continew.starter.core.exception.BadRequestException;
 import top.continew.starter.log.annotation.Log;
 
 import java.util.List;
@@ -62,7 +58,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserService userService;
-    private final JustAuthProperties authProperties;
+    private final SocialAuthApi socialAuthApi;
 
     @SaIgnore
     @Operation(summary = "登录", description = "用户登录")
@@ -85,9 +81,8 @@ public class AuthController {
     @Parameter(name = "source", description = "来源", example = "gitee", in = ParameterIn.PATH)
     @GetMapping("/{source}")
     public SocialAuthAuthorizeResp authorize(@PathVariable String source) {
-        AuthRequest authRequest = this.getAuthRequest(source);
         return SocialAuthAuthorizeResp.builder()
-            .authorizeUrl(authRequest.authorize(AuthStateUtils.createState()))
+            .authorizeUrl(socialAuthApi.getAuthorizeUrl(source, AuthStateUtils.createState()))
             .build();
     }
 
@@ -111,12 +106,4 @@ public class AuthController {
         return authService.buildRouteTree(UserContextHolder.getUserId());
     }
 
-    private AuthRequest getAuthRequest(String source) {
-        try {
-            AuthConfig authConfig = authProperties.getType().get(source.toUpperCase());
-            return AuthRequestBuilder.builder().source(source).authConfig(authConfig).build();
-        } catch (Exception e) {
-            throw new BadRequestException("暂不支持 [%s] 平台账号登录".formatted(source));
-        }
-    }
 }

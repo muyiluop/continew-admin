@@ -24,21 +24,18 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.xkcoding.justauth.autoconfigure.JustAuthProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import me.zhyd.oauth.AuthRequestBuilder;
-import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.request.AuthRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import top.continew.admin.auth.AbstractLoginHandler;
 import top.continew.admin.auth.enums.AuthTypeEnum;
 import top.continew.admin.auth.model.req.SocialLoginReq;
 import top.continew.admin.auth.model.resp.LoginResp;
+import top.continew.admin.common.api.social.SocialAuthApi;
 import top.continew.admin.common.constant.RegexConstants;
 import top.continew.admin.common.enums.DisEnableStatusEnum;
 import top.continew.admin.common.enums.GenderEnum;
@@ -55,7 +52,6 @@ import top.continew.admin.system.service.MessageService;
 import top.continew.admin.system.service.UserRoleService;
 import top.continew.admin.system.service.UserSocialService;
 import top.continew.starter.core.autoconfigure.application.ApplicationProperties;
-import top.continew.starter.core.exception.BadRequestException;
 import top.continew.starter.core.util.validation.ValidationUtils;
 
 import java.time.LocalDateTime;
@@ -72,7 +68,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SocialLoginHandler extends AbstractLoginHandler<SocialLoginReq> {
 
-    private final JustAuthProperties authProperties;
+    private final SocialAuthApi socialAuthApi;
     private final UserSocialService userSocialService;
     private final UserRoleService userRoleService;
     private final MessageService messageService;
@@ -83,11 +79,10 @@ public class SocialLoginHandler extends AbstractLoginHandler<SocialLoginReq> {
     @Transactional
     public LoginResp login(SocialLoginReq req, ClientResp client, HttpServletRequest request) {
         // 获取第三方登录信息
-        AuthRequest authRequest = this.getAuthRequest(req.getSource());
         AuthCallback callback = new AuthCallback();
         callback.setCode(req.getCode());
         callback.setState(req.getState());
-        AuthResponse<AuthUser> response = authRequest.login(callback);
+        AuthResponse<AuthUser> response = socialAuthApi.login(req.getSource(), callback);
         ValidationUtils.throwIf(!response.ok(), response.getMsg());
         AuthUser authUser = response.getData();
         // 如未绑定则自动注册新用户，保存或更新关联信息
@@ -151,21 +146,6 @@ public class SocialLoginHandler extends AbstractLoginHandler<SocialLoginReq> {
     @Override
     public AuthTypeEnum getAuthType() {
         return AuthTypeEnum.SOCIAL;
-    }
-
-    /**
-     * 获取 AuthRequest
-     *
-     * @param source 平台名称
-     * @return AuthRequest
-     */
-    private AuthRequest getAuthRequest(String source) {
-        try {
-            AuthConfig authConfig = authProperties.getType().get(source.toUpperCase());
-            return AuthRequestBuilder.builder().source(source).authConfig(authConfig).build();
-        } catch (Exception e) {
-            throw new BadRequestException("暂不支持 [%s] 平台账号登录".formatted(source));
-        }
     }
 
     /**

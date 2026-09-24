@@ -21,7 +21,7 @@ import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import me.zhyd.oauth.model.AuthUser;
 import org.springframework.stereotype.Service;
-import top.continew.admin.system.enums.SocialSourceEnum;
+import top.continew.admin.common.api.social.SocialAuthApi;
 import top.continew.admin.system.mapper.user.UserSocialMapper;
 import top.continew.admin.system.model.entity.user.UserSocialDO;
 import top.continew.admin.system.service.UserSocialService;
@@ -43,6 +43,7 @@ import java.util.Set;
 public class UserSocialServiceImpl implements UserSocialService {
 
     private final UserSocialMapper baseMapper;
+    private final SocialAuthApi socialAuthApi;
 
     @Override
     public UserSocialDO getBySourceAndOpenId(String source, String openId) {
@@ -74,7 +75,7 @@ public class UserSocialServiceImpl implements UserSocialService {
         String openId = authUser.getUuid();
         List<UserSocialDO> userSocialList = this.listByUserId(userId);
         Set<String> boundSocialSet = CollUtils.mapToSet(userSocialList, UserSocialDO::getSource);
-        String description = SocialSourceEnum.valueOf(source).getDescription();
+        String description = socialAuthApi.getPlatformName(source);
         CheckUtils.throwIf(boundSocialSet.contains(source), "您已经绑定过了 [{}] 平台，请先解绑", description);
         UserSocialDO userSocial = this.getBySourceAndOpenId(source, openId);
         CheckUtils.throwIfNotNull(userSocial, "[{}] 平台账号 [{}] 已被其他用户绑定", description, authUser.getUsername());

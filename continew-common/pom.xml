@@ -102,10 +102,10 @@
             <artifactId>sa-token-sign</artifactId>
         </dependency>
 
-        <!-- ContiNew Starter 认证模块 - JustAuth -->
+        <!-- JustAuth（第三方登录核心库，配置与装配由社交登录插件接管） -->
         <dependency>
-            <groupId>top.continew.starter</groupId>
-            <artifactId>continew-starter-auth-justauth</artifactId>
+            <groupId>me.zhyd.oauth</groupId>
+            <artifactId>JustAuth</artifactId>
         </dependency>
 
         <!-- ContiNew Starter 加密模块 - 字段加密 -->
