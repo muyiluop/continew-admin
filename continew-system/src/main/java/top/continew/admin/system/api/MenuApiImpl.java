@@ -16,6 +16,7 @@
 
 package top.continew.admin.system.api;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.tree.Tree;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,9 @@ import top.continew.admin.common.enums.DisEnableStatusEnum;
 import top.continew.admin.system.model.query.MenuQuery;
 import top.continew.admin.system.service.MenuService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 菜单业务 API 实现
@@ -44,6 +47,24 @@ public class MenuApiImpl implements MenuApi {
         query.setStatus(DisEnableStatusEnum.ENABLE);
         // 过滤掉租户不能使用的菜单
         query.setExcludeMenuIdList(excludeMenuIds);
-        return baseService.tree(query, null, isSimple);
+        List<Tree<Long>> treeList = baseService.tree(query, null, isSimple);
+        // 补充所属模块 ID，便于前端按模块分组展示（精简树不含该字段）
+        Map<Long, Long> moduleIdMap = new HashMap<>();
+        baseService.list(query, null).forEach(menu -> moduleIdMap.put(menu.getId(), menu.getModuleId()));
+        treeList.forEach(tree -> this.fillModuleId(tree, moduleIdMap));
+        return treeList;
+    }
+
+    /**
+     * 递归补充所属模块 ID
+     *
+     * @param tree        树节点
+     * @param moduleIdMap 菜单 ID 与模块 ID 映射
+     */
+    private void fillModuleId(Tree<Long> tree, Map<Long, Long> moduleIdMap) {
+        tree.putExtra("moduleId", moduleIdMap.get(tree.getId()));
+        if (CollUtil.isNotEmpty(tree.getChildren())) {
+            tree.getChildren().forEach(child -> this.fillModuleId(child, moduleIdMap));
+        }
     }
 }

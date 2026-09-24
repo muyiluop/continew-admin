@@ -19,9 +19,7 @@ package top.continew.admin.auth.service;
 import jakarta.servlet.http.HttpServletRequest;
 import top.continew.admin.auth.model.req.LoginReq;
 import top.continew.admin.auth.model.resp.LoginResp;
-import top.continew.admin.auth.model.resp.RouteResp;
-
-import java.util.List;
+import top.continew.admin.auth.model.resp.RouteResultResp;
 
 /**
  * 认证业务接口
@@ -41,10 +39,10 @@ public interface AuthService {
     LoginResp login(LoginReq req, HttpServletRequest request);
 
     /**
-     * 构建路由树
+     * 构建路由信息（含当前端可见模块）
      *
      * @param userId 用户 ID
-     * @return 路由树
+     * @return 路由与模块信息
      */
-    List<RouteResp> buildRouteTree(Long userId);
+    RouteResultResp buildRoute(Long userId);
 }

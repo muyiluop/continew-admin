@@ -109,7 +109,7 @@ P1 追加：`api/SocialAuthApiImpl.java`、`api/SocialDataApiImpl.java`（`Tenan
 - **套餐菜单授权**：`tenant_package_menu` 没有任何种子数据，菜单授权完全由「租户套餐管理」勾选决定。
 - ⚠️ **租户可见性的两个独立机制**（容易混淆）：
   1. `ignore-menus`（yml）**只在「租户套餐管理」的菜单树里生效**（`PackageController.listMenuTree` 是唯一使用点），决定「平台管理员**能勾选**哪些菜单授予租户」；
-  2. 租户实际可见的菜单 = **授予其角色（租户管理员 `admin`）的菜单集合**（`AuthServiceImpl.buildRouteTree` 按 `listByRoleId` 构建路由），来源是套餐的 `tenant_package_menu` 授权。
+  2. 租户实际可见的菜单 = **授予其角色（租户管理员 `admin`）的菜单集合**（`AuthServiceImpl.buildRoute` 按 `listByRoleId` 构建路由），来源是套餐的 `tenant_package_menu` 授权。
 - **`ignore-menus` 必须按「叶子」粒度忽略，不能忽略父菜单**：实测 Hutool `TreeUtil.build` 会把「父节点不在列表中」的子节点**整棵丢弃**（不是提升为顶级）。因此原先 `- 1150 系统配置` 会让 1150 的**全部子菜单**（含社交登录）从套餐菜单树里消失，导致社交登录根本无法被勾选。
 - 现在的做法：**放行 1150「系统配置」，只忽略它与租户无关的 7 个子菜单**（1160 网站 / 1170 安全 / 1180 登录 / 1190 邮件 / 1210 短信 / 1230 存储 / 1250 客户端），社交登录（1260）保持可勾选。
 - ⚠️ 配置改完只是**让勾选成为可能**；**已有套餐仍需平台管理员到「租户套餐管理」补勾「系统配置 > 社交登录」，租户才能真正看到**

@@ -16,66 +16,38 @@
 
 package top.continew.admin.system.model.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
-import top.continew.admin.common.enums.DisEnableStatusEnum;
-import top.continew.admin.system.enums.MenuTypeEnum;
 import top.continew.admin.common.base.model.entity.BaseDO;
+import top.continew.admin.common.enums.DisEnableStatusEnum;
 
 import java.io.Serial;
+import java.util.List;
 
 /**
- * 菜单实体
+ * 业务模块实体
  *
  * @author Charles7c
- * @since 2023/2/15 20:14
+ * @since 2025/9/24 11:00
  */
 @Data
-@TableName("sys_menu")
-public class MenuDO extends BaseDO {
+@TableName(value = "sys_module", autoResultMap = true)
+public class ModuleDO extends BaseDO {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 标题
-     */
-    private String title;
-
-    /**
-     * 上级菜单 ID
-     */
-    private Long parentId;
-
-    /**
-     * 所属模块 ID
-     */
-    private Long moduleId;
-
-    /**
-     * 类型
-     */
-    private MenuTypeEnum type;
-
-    /**
-     * 路由地址
-     */
-    private String path;
-
-    /**
-     * 组件名称
+     * 模块名称
      */
     private String name;
 
     /**
-     * 组件路径
+     * 模块编码（唯一，建议与权限/路由前缀一致）
      */
-    private String component;
-
-    /**
-     * 重定向地址
-     */
-    private String redirect;
+    private String code;
 
     /**
      * 图标
@@ -83,24 +55,15 @@ public class MenuDO extends BaseDO {
     private String icon;
 
     /**
-     * 是否外链
+     * 所属端（取值于字典 client_type；为空表示不限端）
      */
-    private Boolean isExternal;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<String> platforms;
 
     /**
-     * 是否缓存
+     * 模块默认落点路由
      */
-    private Boolean isCache;
-
-    /**
-     * 是否隐藏
-     */
-    private Boolean isHidden;
-
-    /**
-     * 权限标识
-     */
-    private String permission;
+    private String homePath;
 
     /**
      * 排序
@@ -111,4 +74,9 @@ public class MenuDO extends BaseDO {
      * 状态
      */
     private DisEnableStatusEnum status;
+
+    /**
+     * 描述
+     */
+    private String description;
 }

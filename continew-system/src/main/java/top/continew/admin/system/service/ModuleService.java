@@ -14,31 +14,28 @@
  * limitations under the License.
  */
 
-package top.continew.admin.system.constant;
+package top.continew.admin.system.service;
+
+import top.continew.admin.common.base.service.BaseService;
+import top.continew.admin.system.model.query.ModuleQuery;
+import top.continew.admin.system.model.req.ModuleReq;
+import top.continew.admin.system.model.resp.ModuleResp;
+
+import java.util.List;
 
 /**
- * 系统管理相关常量
+ * 业务模块业务接口
  *
  * @author Charles7c
- * @since 2025/7/26 12:05
+ * @since 2025/9/24 11:00
  */
-public class SystemConstants {
+public interface ModuleService extends BaseService<ModuleResp, ModuleResp, ModuleQuery, ModuleReq> {
 
     /**
-     * 超级管理员角色 ID（内置且仅有一位超级管理员用户）
+     * 查询指定客户端端可见的启用模块
+     *
+     * @param clientType 客户端类型（端），为空时按 PC 处理
+     * @return 模块列表
      */
-    public static final Long SUPER_ADMIN_ROLE_ID = 1L;
-
-    /**
-     * 全部权限标识
-     */
-    public static final String ALL_PERMISSION = "*:*:*";
-
-    /**
-     * 管理后台（PC 端）客户端类型
-     */
-    public static final String PLATFORM_PC = "PC";
-
-    private SystemConstants() {
-    }
+    List<ModuleResp> listEnabledByClientType(String clientType);
 }

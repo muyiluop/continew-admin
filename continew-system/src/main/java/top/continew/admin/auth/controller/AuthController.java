@@ -30,7 +30,7 @@ import me.zhyd.oauth.utils.AuthStateUtils;
 import org.springframework.web.bind.annotation.*;
 import top.continew.admin.auth.model.req.LoginReq;
 import top.continew.admin.auth.model.resp.LoginResp;
-import top.continew.admin.auth.model.resp.RouteResp;
+import top.continew.admin.auth.model.resp.RouteResultResp;
 import top.continew.admin.auth.model.resp.SocialAuthAuthorizeResp;
 import top.continew.admin.auth.model.resp.UserInfoResp;
 import top.continew.admin.auth.service.AuthService;
@@ -102,8 +102,8 @@ public class AuthController {
     @Log(ignore = true)
     @Operation(summary = "获取路由信息", description = "获取登录用户的路由信息")
     @GetMapping("/user/route")
-    public List<RouteResp> listRoute() {
-        return authService.buildRouteTree(UserContextHolder.getUserId());
+    public RouteResultResp listRoute() {
+        return authService.buildRoute(UserContextHolder.getUserId());
     }
 
 }

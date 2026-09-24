@@ -25,28 +25,34 @@ import top.continew.starter.data.enums.QueryType;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
 
 /**
- * 菜单查询条件
+ * 业务模块查询条件
  *
  * @author Charles7c
- * @since 2023/2/15 20:21
+ * @since 2025/9/24 11:00
  */
 @Data
 @NoArgsConstructor
-@Schema(description = "菜单查询条件")
-public class MenuQuery implements Serializable {
+@Schema(description = "业务模块查询条件")
+public class ModuleQuery implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 标题
+     * 模块名称
      */
-    @Schema(description = "标题", example = "用户管理")
+    @Schema(description = "模块名称", example = "系统")
     @Query(type = QueryType.LIKE)
-    private String title;
+    private String name;
+
+    /**
+     * 模块编码
+     */
+    @Schema(description = "模块编码", example = "system")
+    @Query(type = QueryType.EQ)
+    private String code;
 
     /**
      * 状态
@@ -55,21 +61,7 @@ public class MenuQuery implements Serializable {
     @Query(type = QueryType.EQ)
     private DisEnableStatusEnum status;
 
-    /**
-     * 所属模块 ID
-     */
-    @Schema(description = "所属模块 ID", example = "1")
-    @Query(type = QueryType.EQ)
-    private Long moduleId;
-
-    public MenuQuery(DisEnableStatusEnum status) {
+    public ModuleQuery(DisEnableStatusEnum status) {
         this.status = status;
     }
-
-    /**
-     * 排除的菜单 ID 列表
-     */
-    @Schema(hidden = true, description = "排除的菜单 ID 列表", example = "[9000]")
-    @Query(columns = "id", type = QueryType.NOT_IN)
-    private List<Long> excludeMenuIdList;
 }

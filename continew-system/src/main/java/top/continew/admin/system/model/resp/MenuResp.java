@@ -52,6 +52,12 @@ public class MenuResp extends BaseResp {
     private Long parentId;
 
     /**
+     * 所属模块 ID
+     */
+    @Schema(description = "所属模块 ID", example = "1")
+    private Long moduleId;
+
+    /**
      * 类型
      */
     @Schema(description = "类型", example = "2")

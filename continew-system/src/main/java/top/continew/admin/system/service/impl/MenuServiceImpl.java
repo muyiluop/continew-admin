@@ -19,6 +19,7 @@ package top.continew.admin.system.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.tree.Tree;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alicp.jetcache.anno.Cached;
 import jakarta.annotation.Resource;
@@ -86,6 +87,8 @@ public class MenuServiceImpl extends BaseServiceImpl<MenuMapper, MenuDO, MenuRes
         if (MenuTypeEnum.DIR.equals(req.getType())) {
             req.setComponent(StrUtil.blankToDefault(req.getComponent(), "Layout"));
         }
+        // 子菜单的所属模块跟随父菜单
+        req.setModuleId(this.resolveModuleId(req.getParentId(), req.getModuleId()));
         RedisUtils.deleteByPattern(CacheConstants.ROLE_MENU_KEY_PREFIX + StringConstants.ASTERISK);
         return super.create(req);
     }
@@ -99,7 +102,14 @@ public class MenuServiceImpl extends BaseServiceImpl<MenuMapper, MenuDO, MenuRes
         }
         MenuDO oldMenu = super.getById(id);
         CheckUtils.throwIfNotEqual(req.getType(), oldMenu.getType(), "不允许修改菜单类型");
+        Long oldModuleId = ObjectUtil.defaultIfNull(oldMenu.getModuleId(), 0L);
+        // 子菜单的所属模块跟随父菜单
+        req.setModuleId(this.resolveModuleId(req.getParentId(), req.getModuleId()));
         super.update(req, id);
+        Long newModuleId = ObjectUtil.defaultIfNull(req.getModuleId(), 0L);
+        if (!oldModuleId.equals(newModuleId)) {
+            this.updateChildrenModuleId(id, newModuleId);
+        }
         RedisUtils.deleteByPattern(CacheConstants.ROLE_MENU_KEY_PREFIX + StringConstants.ASTERISK);
     }
 
@@ -164,6 +174,43 @@ public class MenuServiceImpl extends BaseServiceImpl<MenuMapper, MenuDO, MenuRes
             .ne(MenuDO::getType, MenuTypeEnum.BUTTON)
             .ne(id != null, MenuDO::getId, id)
             .exists(), "组件名称为 [{}] 的菜单已存在", name);
+    }
+
+    /**
+     * 解析菜单所属模块：根菜单取请求值，子菜单继承父菜单
+     *
+     * @param parentId 上级菜单 ID
+     * @param moduleId 模块 ID
+     * @return 所属模块 ID
+     */
+    private Long resolveModuleId(Long parentId, Long moduleId) {
+        if (ObjectUtil.isNull(parentId) || parentId == 0L) {
+            return ObjectUtil.defaultIfNull(moduleId, 0L);
+        }
+        MenuDO parent = super.getById(parentId);
+        CheckUtils.throwIf(ObjectUtil.isNull(parent), "上级菜单不存在");
+        return ObjectUtil.defaultIfNull(parent.getModuleId(), 0L);
+    }
+
+    /**
+     * 级联更新子菜单的所属模块
+     *
+     * @param parentId 上级菜单 ID
+     * @param moduleId 模块 ID
+     */
+    private void updateChildrenModuleId(Long parentId, Long moduleId) {
+        List<Long> childIdList = baseMapper.lambdaQuery()
+            .select(MenuDO::getId)
+            .eq(MenuDO::getParentId, parentId)
+            .list()
+            .stream()
+            .map(MenuDO::getId)
+            .toList();
+        if (CollUtil.isEmpty(childIdList)) {
+            return;
+        }
+        baseMapper.lambdaUpdate().set(MenuDO::getModuleId, moduleId).in(MenuDO::getId, childIdList).update();
+        childIdList.forEach(childId -> this.updateChildrenModuleId(childId, moduleId));
     }
 
     /**

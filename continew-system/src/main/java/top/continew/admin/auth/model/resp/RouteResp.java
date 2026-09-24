@@ -123,6 +123,18 @@ public class RouteResp implements Serializable {
     private Integer sort;
 
     /**
+     * 所属模块 ID
+     */
+    @Schema(description = "所属模块 ID", example = "1")
+    private Long moduleId;
+
+    /**
+     * 所属模块编码
+     */
+    @Schema(description = "所属模块编码", example = "system")
+    private String moduleCode;
+
+    /**
      * 子路由列表
      */
     @Schema(description = "子路由列表")

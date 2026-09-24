@@ -14,101 +14,74 @@
  * limitations under the License.
  */
 
-package top.continew.admin.system.model.entity;
+package top.continew.admin.system.model.resp;
 
-import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import top.continew.admin.common.base.model.resp.BaseDetailResp;
 import top.continew.admin.common.enums.DisEnableStatusEnum;
-import top.continew.admin.system.enums.MenuTypeEnum;
-import top.continew.admin.common.base.model.entity.BaseDO;
 
 import java.io.Serial;
+import java.util.List;
 
 /**
- * 菜单实体
+ * 业务模块响应参数
  *
  * @author Charles7c
- * @since 2023/2/15 20:14
+ * @since 2025/9/24 11:00
  */
 @Data
-@TableName("sys_menu")
-public class MenuDO extends BaseDO {
+@Schema(description = "业务模块响应参数")
+public class ModuleResp extends BaseDetailResp {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 标题
+     * 模块名称
      */
-    private String title;
-
-    /**
-     * 上级菜单 ID
-     */
-    private Long parentId;
-
-    /**
-     * 所属模块 ID
-     */
-    private Long moduleId;
-
-    /**
-     * 类型
-     */
-    private MenuTypeEnum type;
-
-    /**
-     * 路由地址
-     */
-    private String path;
-
-    /**
-     * 组件名称
-     */
+    @Schema(description = "模块名称", example = "系统")
     private String name;
 
     /**
-     * 组件路径
+     * 模块编码
      */
-    private String component;
-
-    /**
-     * 重定向地址
-     */
-    private String redirect;
+    @Schema(description = "模块编码", example = "system")
+    private String code;
 
     /**
      * 图标
      */
+    @Schema(description = "图标", example = "settings")
     private String icon;
 
     /**
-     * 是否外链
+     * 所属端（取值于字典 client_type；为空表示不限端）
      */
-    private Boolean isExternal;
+    @Schema(description = "所属端", example = "PC")
+    private List<String> platforms;
 
     /**
-     * 是否缓存
+     * 模块默认落点路由
      */
-    private Boolean isCache;
-
-    /**
-     * 是否隐藏
-     */
-    private Boolean isHidden;
-
-    /**
-     * 权限标识
-     */
-    private String permission;
+    @Schema(description = "模块默认落点路由", example = "/system/user")
+    private String homePath;
 
     /**
      * 排序
      */
+    @Schema(description = "排序", example = "1")
     private Integer sort;
 
     /**
      * 状态
      */
+    @Schema(description = "状态", example = "1")
     private DisEnableStatusEnum status;
+
+    /**
+     * 描述
+     */
+    @Schema(description = "描述")
+    private String description;
 }

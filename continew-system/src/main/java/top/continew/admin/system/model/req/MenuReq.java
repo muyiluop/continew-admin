@@ -130,6 +130,12 @@ public class MenuReq implements Serializable {
     private Long parentId;
 
     /**
+     * 所属模块 ID（根菜单可指定，子菜单继承父菜单）
+     */
+    @Schema(description = "所属模块 ID", example = "1")
+    private Long moduleId;
+
+    /**
      * 状态
      */
     @Schema(description = "状态", example = "1")
