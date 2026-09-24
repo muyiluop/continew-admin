@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import top.continew.admin.common.api.system.MenuApi;
 import top.continew.admin.common.enums.DisEnableStatusEnum;
 import top.continew.admin.system.model.query.MenuQuery;
+import top.continew.admin.system.model.resp.MenuResp;
 import top.continew.admin.system.service.MenuService;
 
 import java.util.HashMap;
@@ -48,23 +49,28 @@ public class MenuApiImpl implements MenuApi {
         // 过滤掉租户不能使用的菜单
         query.setExcludeMenuIdList(excludeMenuIds);
         List<Tree<Long>> treeList = baseService.tree(query, null, isSimple);
-        // 补充所属模块 ID，便于前端按模块分组展示（精简树不含该字段）
-        Map<Long, Long> moduleIdMap = new HashMap<>();
-        baseService.list(query, null).forEach(menu -> moduleIdMap.put(menu.getId(), menu.getModuleId()));
-        treeList.forEach(tree -> this.fillModuleId(tree, moduleIdMap));
+        // 精简树不含模块/类型/权限等字段，这里统一补充，便于前端按模块分组并按「菜单 + 权限」展示
+        Map<Long, MenuResp> menuMap = new HashMap<>();
+        baseService.list(query, null).forEach(menu -> menuMap.put(menu.getId(), menu));
+        treeList.forEach(tree -> this.fillExtras(tree, menuMap));
         return treeList;
     }
 
     /**
-     * 递归补充所属模块 ID
+     * 递归补充模块 ID、类型、权限标识
      *
-     * @param tree        树节点
-     * @param moduleIdMap 菜单 ID 与模块 ID 映射
+     * @param tree    树节点
+     * @param menuMap 菜单 ID 与菜单信息映射
      */
-    private void fillModuleId(Tree<Long> tree, Map<Long, Long> moduleIdMap) {
-        tree.putExtra("moduleId", moduleIdMap.get(tree.getId()));
+    private void fillExtras(Tree<Long> tree, Map<Long, MenuResp> menuMap) {
+        MenuResp menu = menuMap.get(tree.getId());
+        if (menu != null) {
+            tree.putExtra("moduleId", menu.getModuleId());
+            tree.putExtra("type", menu.getType() == null ? null : menu.getType().getValue());
+            tree.putExtra("permission", menu.getPermission());
+        }
         if (CollUtil.isNotEmpty(tree.getChildren())) {
-            tree.getChildren().forEach(child -> this.fillModuleId(child, moduleIdMap));
+            tree.getChildren().forEach(child -> this.fillExtras(child, menuMap));
         }
     }
 }
