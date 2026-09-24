@@ -54,23 +54,7 @@ public class SocialDataApiImpl implements TenantDataApi {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void init(TenantDTO tenant) {
-        List<SocialConfigDO> templates = this.listDefaultTenantConfig();
-        if (CollUtil.isEmpty(templates)) {
-            return;
-        }
-        Long tenantId = tenant.getId();
-        TenantUtils.execute(tenantId, () -> templates.forEach(template -> {
-            SocialConfigDO config = new SocialConfigDO();
-            config.setSource(template.getSource());
-            config.setName(template.getName());
-            // 仅铺占位行，不复制凭据
-            config.setClientId(StrUtil.EMPTY);
-            config.setClientSecret(StrUtil.EMPTY);
-            config.setSort(template.getSort());
-            config.setDescription(template.getDescription());
-            config.setStatus(DisEnableStatusEnum.DISABLE);
-            baseMapper.insert(config);
-        }));
+        // 租户初始化不需要进行操作
     }
 
     @Override
