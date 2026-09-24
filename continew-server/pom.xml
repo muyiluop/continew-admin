@@ -58,6 +58,12 @@
             <artifactId>continew-plugin-generator</artifactId>
         </dependency>
 
+        <!-- 社交登录插件 -->
+        <dependency>
+            <groupId>top.continew.admin</groupId>
+            <artifactId>continew-plugin-social</artifactId>
+        </dependency>
+
         <!-- ContiNew Starter 链路追踪模块 -->
         <dependency>
             <groupId>top.continew.starter</groupId>

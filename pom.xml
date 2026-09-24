@@ -37,6 +37,7 @@
         <!-- 项目版本号 -->
         <revision>4.1.0</revision>
         <x-file-storage.version>2.3.0</x-file-storage.version>
+        <justauth.version>1.16.7</justauth.version>
     </properties>
 
     <!-- 全局依赖版本管理 -->
@@ -89,6 +90,20 @@
                 <groupId>top.continew.admin</groupId>
                 <artifactId>continew-plugin-generator</artifactId>
                 <version>${revision}</version>
+            </dependency>
+
+            <!-- 社交登录插件 -->
+            <dependency>
+                <groupId>top.continew.admin</groupId>
+                <artifactId>continew-plugin-social</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- JustAuth（第三方登录核心库，配置由社交登录插件管理） -->
+            <dependency>
+                <groupId>me.zhyd.oauth</groupId>
+                <artifactId>JustAuth</artifactId>
+                <version>${justauth.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
